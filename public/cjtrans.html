@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <title>EPG-直播源转换</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1">
+    <META NAME="Description" CONTENT="EPG源,EPG地址,EPG,节目单,DIYP,百川,超级直播,信源格式>转换,小工具,bing每日一换接口">
+    <META NAME="Keywords" CONTENT="简化至epg.112114.xyz,EPG源,EPG,DIYP,节目单,百川,超级直播,信源格式转换,小工具,bing每日一换接口">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <nav class="navbar navbar-inverse" role="navigation">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#example-navbar-collapse">
+                    <span class="sr-only">切换导航</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">DIY节目列表管理器</a>
+            </div>
+            <div class="collapse navbar-collapse" id="example-navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li id="yd"><a href="index.html?yys=yd" target="_blank">移动</a>
+                    </li>
+                    <li id="dx"><a href="index.html?yys=dx" target="_blank">电信</a>
+                    </li>
+                    <li id="lt"><a href="index.html?yys=lt" target="_blank">联通</a>
+                    </li>
+                    <li id="ty"><a href="index.html?yys=ty" target="_blank">通用</a>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav pull-right">
+                    <li id="yd" class="active"><a href="cjtrans.html">转换</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="row" style="margin-top:-5px;">
+            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <input type="file" id="file-input" class="hidden" />
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control" placeholder="选择本地文件">	<span class="input-group-btn">
+
+							<button class="btn btn-primary" id="file_input" onclick="$('#file-input').click();">浏览本地文件</button>
+
+						</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <textarea id="source" name="source" form="usrform" placeholder="内容不会上传服务器,纯前端js处理的,绝不偷源!!!&#10;内容不会上传服务器,纯前端js处理的,绝不偷源!!!&#10;内容不会上传服务器,纯前端js处理的,绝不偷源!!!&#10;&#10;使用方法:&#10;注意下方选择自己想要匹配的epg源格式&#10;复制自己的diyp格式源到输入框内/拖拽本地文件到此窗口/选择打开本地txt文件 -> 选择格式 -> 提交&#10;&#10;m3u格式,需要配合本站pp.xml格式epg来使用!&#10;&#10;节目台标如有缺失,或者不对,不好看,请到首页自行上传台标!"
+                        rows='20' class="form-control"></textarea>
+                    </div>
+                    <div class="panel-footer text-right">
+                        <button class="btn btn-primary" onclick="tran2m3u()">m3u格式</button>
+                        <button class="btn btn-info" onclick="m3u2txt()">m3u2txt</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <div class="input-group input-group-sm">
+                            <input id="url" type="text" class="form-control" value="" placeholder="输入远程文件地址">
+                            <span class="input-group-btn">
+    							<button class="btn btn-danger" id="read_url" onclick="read_url()">读取远程文件</button>
+    						</span>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <textarea id="res" rows="20" class="form-control"></textarea>
+                    </div>
+                    <div class="panel-footer">
+                        <button class="btn btn-info" id="copytext" onclick="copyText()">一键复制</button>
+                        <button class="btn btn-success" id="downtext" onclick="dl()">一键下载</button>
+                        <span class="text-danger">本工具修改自epg.112114.xyz</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    function tran2m3u() {
+        var source = document.getElementById("source").value;
+        var slists = source.split('\n');
+        if (source.toUpperCase().indexOf('HTTP') != -1) {
+            var result = "#EXTM3U\r\n";
+        } else {
+            var result = "";
+        }
+        for (var i = 0; i <= slists.length - 1; i++) {
+            var iptv = slists[i].split(",");
+            if (!iptv[0] || iptv[1] == "undefined" || slists[i].toUpperCase().indexOf('HTTP') == -1) {
+                continue;
+            }
+            var tname = "#EXTINF:-1," + iptv[0] + "\r\n";
+            var turl = iptv[1] + "\r\n";
+            result += tname + turl
+        }
+        if (result) {
+            document.getElementById("res").innerHTML = result;
+            DisplayAndHiddenBtn("copytext", "d");
+            DisplayAndHiddenBtn("downtext", "d");
+        }else {
+            DisplayAndHiddenBtn("copytext", "h");
+            DisplayAndHiddenBtn("downtext", "h");
+        }
+    }
+
+    function m3u2txt() {
+        var source = document.getElementById("source").value;
+        var slists = source.replace(/[\r\n]+/g, '@');
+        var r = slists.match(/,([^,@]+)@([^@]+)/g)
+        //添加了删除名称前后的空格
+        if (r) {
+            result = r.map(m => m.replace(/,/g, '').replace(/[\s\t]*@/g, ',').replace(/(\n[\s\t]*\r*\n)/g, '\n').replace(
+                /^[\n\r\n\t\s]*|[\n\r\n\t\s]*$/g, '')).join('\r\n');
+        }
+        if (result) {
+            document.getElementById("res").innerHTML = result;
+            DisplayAndHiddenBtn("copytext", "d");
+            DisplayAndHiddenBtn("downtext", "d");
+        }else {
+            DisplayAndHiddenBtn("copytext", "h");
+            DisplayAndHiddenBtn("downtext", "h");
+        }
+    }
+
+
+    function DisplayAndHiddenBtn(btnId, type) {
+        var currentBtn = document.getElementById(btnId);
+        if (type == "d") {
+            currentBtn.style.display = "inline-block"; //style中的display属性
+        } else if (type == "h") {
+            currentBtn.style.display = "none";
+        }
+    }
+
+     //下载
+
+    function dl() {
+        const data = document.getElementById("res").innerHTML.replace(/<br>/g, '\n');
+        if (data.indexOf("EXTM3U") != -1) {
+            var tt = "m3u"
+        } else {
+            var tt = "txt"
+        }
+        const blob = new Blob([data], {
+            type: "text/plain"
+        })
+        const a = document.createElement("a")
+        a.href = URL.createObjectURL(blob)
+        a.download = "yourtv." + tt
+        a.click()
+        URL.revokeObjectURL(a.href);
+        a.remove();
+    }
+
+    function copyText() {
+        var text = document.getElementById("res").innerHTML;
+        var input = document.createElement('textarea')
+        input.innerHTML = text.replace(/<br>/g, "\n")
+        input.setAttribute('readonly', 'readonly')
+        document.body.appendChild(input)
+        input.select(); //选中文本
+        document.execCommand("copy");
+        document.body.removeChild(input)
+    }
+
+    function readSingleFile(e) {
+        var file = e.target.files[0];
+        if (!file) {
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var contents = e.target.result;
+            displayContents(contents);
+        };
+        reader.readAsText(file);
+    }
+
+    function displayContents(contents) {
+        var element = document.getElementById('source');
+        element.textContent = contents;
+    }
+
+    function read_url() {
+        $.ajax({
+            url: 'api.php?action=get_content',
+            type: "post",
+            dataType: "json",
+            data: {
+                url: $("#url").val(),
+            },
+            success: function (json) {
+                //console.log(json);
+                $("#source").val(json.data);
+            },
+            error: function () {
+                alert("错误");
+            }
+        });
+    }
+
+    function init() {
+        var dest = document.getElementById("source");
+        dest.addEventListener("dragover", function (ev) {
+            ev.stopPropagation();
+            ev.preventDefault();
+        }, false);
+
+        dest.addEventListener("dragend", function (ev) {
+            ev.stopPropagation();
+            ev.preventDefault();
+        }, false);
+
+        dest.addEventListener("drop", function (ev) {
+            ev.stopPropagation();
+            ev.preventDefault();
+
+            var file = ev.dataTransfer.files[0];
+            var reader = new FileReader();
+            if (file.name.substr(-3) == 'm3u' || file.type.substr(0, 4) == "text") {
+                reader.readAsText(file);
+                reader.onload = function (f) {
+                    //dest.innerHTML = "<pre>" + this.result + "</pre>";
+                    dest.innerHTML = this.result;
+                    dest.style.background = "white";
+                }
+            } else {
+                dest.innerHTML = "暂不支持此类文件的预览";
+                dest.style.background = "white";
+            }
+        }, false);
+
+        document.getElementById('file-input').addEventListener('change', readSingleFile, false);
+    }
+
+     //设置页面属性，不执行默认处理（拒绝被拖放）
+    document.ondragover = function (e) {
+        e.preventDefault();
+    };
+    document.ondrop = function (e) {
+        e.preventDefault();
+    }
+
+    window.onload = init;
+    </script>
+</body>
+
+</html>

@@ -7,6 +7,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@deno/kv": "^0.14.0",
     "@hono/node-server": "^2.0.12",
     "hono": "^4.12.33"
   },

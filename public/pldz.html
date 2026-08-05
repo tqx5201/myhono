@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <title>生成多个地址（带补0）</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="mb-4">生成多个地址（带补0）</h1>
+
+        <form>
+            <div class="mb-3">
+                <label for="originalString" class="form-label">原始字符串：</label>
+                <input type="text" id="originalString" class="form-control" placeholder="请输入原始字符串">
+            </div>
+
+            <div class="mb-3">
+                <label for="startString" class="form-label">开始字符串：</label>
+                <input type="text" id="startString" class="form-control" placeholder="请输入开始字符串">
+            </div>
+
+            <div class="mb-3">
+                <label for="endString" class="form-label">结束字符串：</label>
+                <input type="text" id="endString" class="form-control" placeholder="请输入结束字符串">
+            </div>
+
+            <button type="button" class="btn btn-primary" onclick="generateAddresses()">生成地址</button>
+        </form>
+
+        <div id="result" class="mt-4"></div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.min.js"></script>
+
+    <script>
+        function generateAddresses() {
+            var originalString = document.getElementById('originalString').value;
+            var startString = document.getElementById('startString').value;
+            var endString = document.getElementById('endString').value;
+
+            var result = '';
+            for (var i = parseInt(startString); i <= parseInt(endString); i++) {
+                var address = originalString.replace("(*)", i.toString().padStart(endString.length, '0'));
+                result += address + '<br>';
+            }
+
+            document.getElementById('result').innerHTML = result;
+        }
+    </script>
+</body>
+</html>

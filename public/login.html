@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>系统登录</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    display: flex; justify-content: center; align-items: center;
+    height: 100vh; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  .login-box {
+    width: 360px; padding: 40px; background: #fff;
+    border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  h3 { margin: 0 0 24px; text-align: center; color: #333; font-size: 24px; }
+  .field { margin-bottom: 16px; }
+  label { display: block; margin-bottom: 6px; color: #555; font-size: 14px; }
+  input {
+    width: 100%; padding: 10px 12px; border: 1px solid #ddd;
+    border-radius: 6px; font-size: 14px; transition: border-color 0.2s;
+  }
+  input:focus { outline: none; border-color: #667eea; }
+  button {
+    width: 100%; padding: 12px; margin-top: 8px;
+    background: #667eea; color: #fff; border: none;
+    border-radius: 6px; font-size: 16px; cursor: pointer;
+    transition: background 0.2s;
+  }
+  button:hover { background: #5a67d8; }
+  .error { color: #e53e3e; font-size: 13px; margin-top: 8px; text-align: center; }
+</style>
+</head>
+<body>
+  <div class="login-box">
+    <h3>系统登录</h3>
+    <form action="/login" method="POST">
+      <div class="field">
+        <label>用户名</label>
+        <input name="username" placeholder="admin" required autofocus value="admin">
+      </div>
+      <div class="field">
+        <label>密码</label>
+        <input name="password" type="password" placeholder="••••••" required value="123456">
+      </div>
+      <button type="submit">登 录</button>
+    </form>
+  </div>
+</body>
+</html>

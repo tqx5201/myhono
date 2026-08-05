@@ -3,6 +3,7 @@ import { Hono, type Context, type Next } from 'hono'
 import { sign, verify } from 'hono/jwt'
 import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
 import { HTTPException } from 'hono/http-exception'
+import { serveStatic } from '@hono/node-server/serve-static'
 
 // ==================== 配置 ====================
 const JWT_SECRET = process.env.JWT_SECRET || 'it-is-very-secret'
@@ -10,6 +11,9 @@ const COOKIE_NAME = 'token'
 const TOKEN_EXPIRES = 60 * 60 * 24 * 365 // 365天（秒）
 
 const app = new Hono()
+const kv = await Deno.openKv();
+//const kv = {}
+
 
 // ==================== 类型扩展 ====================
 declare module 'hono' {
@@ -19,12 +23,15 @@ declare module 'hono' {
 }
 
 // ==================== JWT 中间件 ====================
-// 注意：hono 的 jwt() 不支持 getToken 选项，我们用自定义中间件实现
 const customJwtAuth = async (c: Context, next: Next) => {
   try {
     const token = getCookie(c, COOKIE_NAME)
     if (!token) {
-      return c.json({ error: '未登录，请先登录' }, 401)
+      return c.html(`
+<script>
+alert('未登录，请先登录');
+setTimeout(() => location.href = '/login.html', 100);
+</script>`);
     }
     const payload = await verify(token, JWT_SECRET, 'HS256')
     c.set('jwtPayload', payload as { name: string; exp: number })
@@ -34,64 +41,25 @@ const customJwtAuth = async (c: Context, next: Next) => {
   }
 }
 
-app.use('/auth/*', customJwtAuth)
+// ========== 关键修正1：白名单同时放行 登录页面 + 登录接口 ==========
+const whiteListPaths = ['/login.html', '/login']
+app.use('/*', async (c, next) => {
+  const path = c.req.path
+  // 白名单直接放行
+  if (whiteListPaths.includes(path)) {
+    return next();
+  }
+  // 其余所有路由执行鉴权
+  return customJwtAuth(c, next);
+});
 
-// ==================== 登录页 ====================
+// ========== 关键修正2：静态资源中间件必须放在鉴权中间件之后 ==========
+app.get('/', (c) => c.redirect('/index.html'))
+app.use('/*', serveStatic({ root: './public' }))
+
+// ==================== 登录页路由（兼容直接访问 /login） ====================
 app.get('/login', (c) => {
-  return c.html(`
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>系统登录</title>
-<style>
-  * { box-sizing: border-box; }
-  body {
-    display: flex; justify-content: center; align-items: center;
-    height: 100vh; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
-  .login-box {
-    width: 360px; padding: 40px; background: #fff;
-    border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  }
-  h3 { margin: 0 0 24px; text-align: center; color: #333; font-size: 24px; }
-  .field { margin-bottom: 16px; }
-  label { display: block; margin-bottom: 6px; color: #555; font-size: 14px; }
-  input {
-    width: 100%; padding: 10px 12px; border: 1px solid #ddd;
-    border-radius: 6px; font-size: 14px; transition: border-color 0.2s;
-  }
-  input:focus { outline: none; border-color: #667eea; }
-  button {
-    width: 100%; padding: 12px; margin-top: 8px;
-    background: #667eea; color: #fff; border: none;
-    border-radius: 6px; font-size: 16px; cursor: pointer;
-    transition: background 0.2s;
-  }
-  button:hover { background: #5a67d8; }
-  .error { color: #e53e3e; font-size: 13px; margin-top: 8px; text-align: center; }
-</style>
-</head>
-<body>
-  <div class="login-box">
-    <h3>系统登录</h3>
-    <form action="/login" method="POST">
-      <div class="field">
-        <label>用户名</label>
-        <input name="username" placeholder="admin" required autofocus>
-      </div>
-      <div class="field">
-        <label>密码</label>
-        <input name="password" type="password" placeholder="••••••" required>
-      </div>
-      <button type="submit">登 录</button>
-    </form>
-  </div>
-</body>
-</html>
-`)
+  return c.redirect('/login.html')
 })
 
 // ==================== 登录接口 ====================
@@ -102,7 +70,7 @@ app.post('/login', async (c) => {
     const password = body.password as string
 
     if (!username || !password) {
-      return c.html('<p>用户名和密码不能为空 <a href="/">返回</a></p>', 400)
+      return c.html('<p>用户名和密码不能为空 <a href="/login.html">返回</a></p>', 400)
     }
 
     if (username === 'admin' && password === '123456') {
@@ -126,21 +94,75 @@ app.post('/login', async (c) => {
         maxAge: TOKEN_EXPIRES,
       })
 
-      return c.redirect('/auth/page')
+      // 登录成功跳转控制台
+      return c.redirect('/index.html')
     }
 
-    return c.html('<p>账号或密码错误 <a href="/">返回</a></p>', 401)
+    return c.html('<p>账号或密码错误 <a href="/login.html">返回</a></p>', 401)
   } catch (err) {
     console.error('登录异常:', err)
-    return c.html('<p>服务器内部错误 <a href="/">返回</a></p>', 500)
+    return c.html('<p>服务器内部错误 <a href="/login.html">返回</a></p>', 500)
   }
 })
 
 // ==================== 登出接口 ====================
 app.get('/logout', (c) => {
   deleteCookie(c, COOKIE_NAME, { path: '/' })
-  return c.redirect('/login')
+  return c.redirect('/login.html')
 })
+
+
+
+
+app.post("/api", async (c) => {
+  try {
+    const action = c.req.query("action");
+    const body = await c.req.parseBody();
+    const yys = body.yys;
+
+    if (!action || !yys) return c.json({ code: 400, msg: "参数缺失" }, 400);
+    const prefix = [yys];
+
+    switch (action) {
+      case "save": {
+        const oldName = body.old_name;
+        const newName = body.new_name;
+        const data = body.data;
+        if (!newName) return c.json({ code: 400, msg: "new_name 不能为空" }, 400);
+
+        let msg = "添加数据成功";
+        if (oldName !== "null" && oldName && oldName !== newName) {
+          await kv.delete([...prefix, oldName]);
+          msg = "修改数据成功";
+        }
+        await kv.set([...prefix, newName], data);
+        return c.json({ code: 200, msg });
+      }
+      case "categorys": {
+        const list = [];
+        for await (const entry of kv.list({ prefix })) list.push({ name: entry.key[1] });
+        return c.json({ code: 200, msg: "获取成功", data: list });
+      }
+      case "read": {
+        const entry = await kv.get([...prefix, body.file]);
+        return c.json({ code: 200, msg: "读取成功", data: entry.value });
+      }
+      case "del": {
+        await kv.delete([...prefix, body.file]);
+        return c.json({ code: 200, msg: "删除成功" });
+      }
+      default:
+        return c.json({ code: 400, msg: `未知操作: ${action}` }, 400);
+    }
+  } catch (err) {
+    console.error(err);
+    return c.json({ code: 500, msg: "操作失败" }, 500);
+  }
+});
+
+
+
+
 
 // ==================== 受保护页面 ====================
 app.get('/auth/page', (c) => {

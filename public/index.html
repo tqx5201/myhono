@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>DIY节目列表管理器</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,Chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="https://www.layuicdn.com/layer-v3.5.1/layer.js"></script>
+    </head>
+	
+    <body>
+        <div class="container-fluid">
+            <nav class="navbar navbar-inverse" role="navigation">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#example-navbar-collapse">
+                         <span class="sr-only">切换导航</span>
+                         <span class="icon-bar"></span>
+                         <span class="icon-bar"></span>
+                         <span class="icon-bar"></span>
+                    </button> 
+                    <a class="navbar-brand" href="#">DIY节目列表管理器</a>
+
+                </div>
+                <div class="collapse navbar-collapse" id="example-navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li id="yd"><a href="?yys=yd">移动</a></li>
+                        <li id="dx"><a href="?yys=dx">电信</a></li>
+                        <li id="lt"><a href="?yys=lt">联通</a></li>
+			                  <li id="ty"><a href="?yys=ty">通用</a></li>
+                    </ul>
+                    <ul class="nav navbar-nav" style="float:right">
+                        <li><a href="cjtrans.html" target="_blank">转换</a></li>
+                        <li><a href="pldz.html" target="_blank">生成</a></li>
+                    </ul>
+                </div>
+            </nav>
+            
+
+            <div class="row" style="margin-top:-5px;">
+                <div class="col-xs-12 col-sm-12 col-md-2 col-lg-2">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+			    <button id="add_new" class="btn btn-success form-control">新增分类</button>
+                        </div>
+			<ul class="list-group">
+                        </ul>
+                        <div class="panel-footer">
+			    <button id="up_qiniu" class="btn btn-primary form-control">上传七牛</button>
+			</div>
+                    </div>
+                </div>
+                
+                <form role="form">
+                <div class="col-xs-12 col-sm-12 col-md-10 col-lg-10">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <div class="input-group input-group-sm">
+				<input id="id" type="hidden" class="form-control" value="">
+                                <input id="name" type="text" class="form-control" value="">
+				<span class="input-group-btn">
+				<!--<button id="save1" class="btn btn-primary btn-sm">&nbsp;&nbsp;保存&nbsp;&nbsp;</button>-->
+				<button id="del" class="btn btn-danger btn-sm">&nbsp;&nbsp;删除&nbsp;&nbsp;</button></span>
+                            </div>
+                        </div>
+                        <div class="panel-body" id="my_data_area">
+                            <!--<textarea id="data" rows="20" class="form-control" style="heigth:500px;"></textarea>-->
+                            <!--<div id="data" style="height: 500px; width: 100%"></div>-->
+                            
+                        </div>
+                        <div class="panel-footer">
+                            <div>
+                                <button type="button" id="save" class="btn btn-info form-control">&nbsp;&nbsp;保存&nbsp;&nbsp;</button>
+                            </div>
+                            <br>
+                            <div class="input-group">
+                                <span class="input-group-addon">将文本</span>
+                                <input type="text" id="find" class="form-control" placeholder="要查找的文本">
+                            </div>
+                            <br>
+                            <div class="input-group">
+                                <span class="input-group-addon">替换为</span>
+                                <input type="text" id="replace" class="form-control" placeholder="要替换的文本">
+                            </div>
+                            <br>
+                            <button type="button" class="btn btn-primary form-control" onclick="replaceText()">替换</button>
+                            <br>
+                            <span>为了避免频繁操作出现异常，请在自建前提前备份！</span>
+                        </div>
+                    </div>
+                </div>
+                </form>
+            </div>
+        </div>
+        
+        <script src="my.js"></script>
+    </body>
+</html>
