@@ -1,24 +1,24 @@
 //定义数据在哪里显示
 var my_data_area = '';
-if(my_data_area=='ace'){
-	$('#my_data_area').html('<div id="data" style="height: 500px; width: 100%"></div>');
-	var editor = ace.edit("data");
-	editor.setTheme("ace/theme/monokai"); // 设置主题
-	editor.setFontSize(16);
-	editor.getSession().setMode("ace/mode/text"); // 设置语言模式
-	editor.getSession().setUseWrapMode(true); //设置代码自动换行
-	editor.getSession().on("change", function(e) {
-		console.log("Editor content changed:", e);
-	});
-}else{
-	$('#my_data_area').html('<textarea id="data" rows="20" class="form-control" style="heigth:500px;"></textarea>');
+if (my_data_area == 'ace') {
+  $('#my_data_area').html('<div id="data" style="height: 500px; width: 100%"></div>');
+  var editor = ace.edit("data");
+  editor.setTheme("ace/theme/monokai"); // 设置主题
+  editor.setFontSize(16);
+  editor.getSession().setMode("ace/mode/text"); // 设置语言模式
+  editor.getSession().setUseWrapMode(true); //设置代码自动换行
+  editor.getSession().on("change", function(e) {
+    console.log("Editor content changed:", e);
+  });
+} else {
+  $('#my_data_area').html('<textarea id="data" rows="20" class="form-control" style="heigth:500px;"></textarea>');
 }
 
 
 
 var yys = getUrlParam("yys");
 if (yys === null) {
-    yys = 'yd';
+  yys = 'yd';
 }
 set_css(yys);
 
@@ -31,174 +31,189 @@ get_categorys();
 
 
 function getUrlParam(name) {
-    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
-    var r = window.location.search.substr(1).match(reg);
-    if (r !== null)
-        return unescape(r[2]);
-    return null;
+  var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+  var r = window.location.search.substr(1).match(reg);
+  if (r !== null)
+    return unescape(r[2]);
+  return null;
 }
 
 
 
 function get_categorys() {
-    $.ajax({
-        url: api_url + "action=categorys",
-        type: "post",
-        dataType: "json",
-        data: {
-            yys: yys,
-            data: $('#data').val(),
-        },
-        success: function(json) {
-            //console.log(json);
-            if (!$.isEmptyObject(json)) {
-                $_html = '';
-                $.each(json.data, function(i, item) {
-                    $_html += '<li class="list-group-item"><a href="#" onclick="read(\'' + item.name + '\')">' + item.name + '</a></li>';
-                });
-                $('.list-group').html($_html);
-                read(json[0]['name']);
-            } else {
-                $('.list-group').html("");
-                $("#name").val("新分类");
-                $("#data").val("暂无数据");
-            }
-        },
-        error: function() {
-            alert("错误");
-        }
-    });
+  $.ajax({
+    url: api_url + "action=categorys",
+    type: "post",
+    dataType: "json",
+    data: {
+      yys: yys,
+      data: $('#data').val(),
+    },
+    success: function(json) {
+      //console.log(json);
+      if (!$.isEmptyObject(json)) {
+        $_html = '';
+        $.each(json.data, function(i, item) {
+          $_html += '<li class="list-group-item"><a href="#" onclick="read(\'' + item.name + '\')">' + item.name + '</a></li>';
+        });
+        $('.list-group').html($_html);
+        read(json[0]['name']);
+      } else {
+        $('.list-group').html("");
+        $("#name").val("新分类");
+        $("#data").val("暂无数据");
+      }
+    },
+    error: function() {
+      alert("错误");
+    }
+  });
 }
 
 
 
 function read(_name) {
-    file_name = _name;
-    $("#name").val(_name);
-    $.ajax({
-        url: api_url + "action=read",
-        type: "post",
-        data: {
-            yys: yys,
-            file: file_name,
-        },
-        dataType: "json",
-        success: function(json) {
-            //console.log(json);
-            if(my_data_area=='ace'){
-                editor.setValue(json.data,-1);
-                editor.clearSelection();
-                editor.setShowPrintMargin(false);
-            }else{
-               $("#data").val(json.data); 
-            }
-        },
-        error: function() {
-            alert("错误");
-        }
-    });
+  file_name = _name;
+  $("#name").val(_name);
+  $.ajax({
+    url: api_url + "action=read",
+    type: "post",
+    data: {
+      yys: yys,
+      file: file_name,
+    },
+    dataType: "json",
+    success: function(json) {
+      //console.log(json);
+      if (my_data_area == 'ace') {
+        editor.setValue(json.data, -1);
+        editor.clearSelection();
+        editor.setShowPrintMargin(false);
+      } else {
+        $("#data").val(json.data);
+      }
+    },
+    error: function() {
+      alert("错误");
+    }
+  });
 }
 
 $("#save").click(function() {
-    if(my_data_area=='ace'){
-        my_data = editor.getValue();
-    }else{
-        my_data = $('#data').val();
+  if (my_data_area == 'ace') {
+    my_data = editor.getValue();
+  } else {
+    my_data = $('#data').val();
+  }
+  $.ajax({
+    url: api_url + "action=save",
+    type: "post",
+    dataType: "json",
+    data: {
+      yys: yys,
+      old_name: file_name,
+      new_name: $("#name").val(),
+      data: my_data,
+    },
+    success: function(json) {
+      //console.log(json);
+      alert(json.msg);
+    },
+    error: function() {
+      alert("错误");
     }
-    $.ajax({
-        url: api_url + "action=save",
-        type: "post",
-        dataType: "json",
-        data: {
-            yys: yys,
-            old_name: file_name,
-            new_name: $("#name").val(),
-            data: my_data,
-        },
-        success: function(json) {
-            //console.log(json);
-            alert(json.msg);
-        },
-        error: function() {
-            alert("错误");
-        }
-    });
-    get_categorys();
+  });
+  get_categorys();
 });
 
 
 $("#del").click(function() {
-    $.ajax({
-        url: api_url + "action=del",
-        type: "post",
-        dataType: "json",
-        data: {
-            yys: yys,
-            file: file_name,
-        },
-        success: function(json) {
-            //console.log(json);
-            alert(json.msg);
-        },
-        error: function() {
-            alert("错误");
-        }
-    });
-    get_categorys();
+  $.ajax({
+    url: api_url + "action=del",
+    type: "post",
+    dataType: "json",
+    data: {
+      yys: yys,
+      file: file_name,
+    },
+    success: function(json) {
+      //console.log(json);
+      alert(json.msg);
+    },
+    error: function() {
+      alert("错误");
+    }
+  });
+  get_categorys();
 });
 
 function set_css(id) {
-    $("#yd").removeClass("active");
-    $("#dx").removeClass("active");
-    $("#lt").removeClass("active");
-    $("#ty").removeClass("active");
-    $("#" + id).addClass("active");
+  $("#yd").removeClass("active");
+  $("#dx").removeClass("active");
+  $("#lt").removeClass("active");
+  $("#ty").removeClass("active");
+  $("#" + id).addClass("active");
 }
 
 $("#add_new").click(function() {
-    file_name = 'null';
-    $("#name").val("新分类");
-    $("#data").val("");
+  file_name = 'null';
+  $("#name").val("新分类");
+  $("#data").val("");
 });
 
 $("#up_qiniu").click(function() {
-    $.ajax({
-        url: api_url + "action=up_qiniu",
-        type: "post",
-        dataType: "json",
-        data: {
-            yys: yys,
-        },
-        success: function(json) {
-            alert(json.msg);
-        },
-        error: function() {
-            alert("错误");
-        }
-    });
+  $.ajax({
+    url: api_url + "action=up_qiniu",
+    type: "post",
+    dataType: "json",
+    data: {
+      yys: yys,
+    },
+    success: function(json) {
+      alert(json.msg);
+    },
+    error: function() {
+      alert("错误");
+    }
+  });
+});
+$("#merge_list").click(function() {
+  $.ajax({
+    url: api_url + "action=merge_list",
+    type: "post",
+    dataType: "json",
+    data: {
+      yys: yys,
+    },
+    success: function(json) {
+      alert(json.msg);
+    },
+    error: function() {
+      alert("错误");
+    }
+  });
 });
 
 
-
 function replaceText() {
-	var findText = $('#find').val();
-	var replaceText = $('#replace').val();
-	if(my_data_area=='ace'){
-		editor.find(findText, {  
-			backwards: false,  
-			wrap: false,  
-			caseSensitive: false,  
-			wholeWord: false,  
-			regExp: false  
-		});  
-		editor.findAll();
-		editor.replaceAll(replaceText);
-	}else{
-		var originalText = document.getElementById('data').value;
-		var modifiedText = originalText.replace(new RegExp(findText, 'g'), replaceText);
-		//console.log(modifiedText);
-		document.getElementById('data').value = modifiedText;
-	}
+  var findText = $('#find').val();
+  var replaceText = $('#replace').val();
+  if (my_data_area == 'ace') {
+    editor.find(findText, {
+      backwards: false,
+      wrap: false,
+      caseSensitive: false,
+      wholeWord: false,
+      regExp: false
+    });
+    editor.findAll();
+    editor.replaceAll(replaceText);
+  } else {
+    var originalText = document.getElementById('data').value;
+    var modifiedText = originalText.replace(new RegExp(findText, 'g'), replaceText);
+    //console.log(modifiedText);
+    document.getElementById('data').value = modifiedText;
+  }
 }
 
 
