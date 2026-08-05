@@ -9,7 +9,7 @@ export function mergeLiveSourceList(txtContent: string): string {
   // 3. 删除 # 开头的整行（含前面空白空格、制表符）
   txtContent = txtContent
     .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/\/\/.*/g, '')
+    .replace(/^\s*\/\/.*/gm, '')
     .replace(/^\s*#.*/gm, '');
 
   const lines = txtContent
