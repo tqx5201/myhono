@@ -53,7 +53,7 @@ function get_categorys() {
             //console.log(json);
             if (!$.isEmptyObject(json)) {
                 $_html = '';
-                $.each(json, function(i, item) {
+                $.each(json.data, function(i, item) {
                     $_html += '<li class="list-group-item"><a href="#" onclick="read(\'' + item.name + '\')">' + item.name + '</a></li>';
                 });
                 $('.list-group').html($_html);
