@@ -41,7 +41,7 @@ setTimeout(() => location.href = '/login.html', 100);
 };
 
 // ========== 关键修正1：白名单同时放行 登录页面 + 登录接口 ==========
-const whiteListPaths = ["/login.html", "/login"];
+const whiteListPaths = ["/login.html", "/login", "/list/*"];
 app.use("/*", async (c, next) => {
   const path = c.req.path;
   // 白名单直接放行
@@ -113,10 +113,10 @@ app.get("/logout", (c) => {
   return c.redirect("/login.html");
 });
 
-app.get("/list_:type.txt", async (c) => {
+app.get("/list/:type", async (c) => {
   const type = c.req.param("type");
-  const entry = await kv.get([type, "txt"]);
-  return c.text(entry);
+  const entry = await kv.get(["txt", type]);
+  return c.text(entry.value);
 });
 
 app.post("/api", async (c) => {
@@ -153,8 +153,9 @@ app.post("/api", async (c) => {
       case "merge_list": {
         const list = [];
         for await (const entry of kv.list({ prefix }))
-          list.push(mergeLiveSourceList(entry.value[1]));
-        await kv.set([...prefix, "txt"], list.join('\n'));
+          list.push(mergeLiveSourceList(entry.value));
+
+        await kv.set(["txt", ...prefix], list.join('\n'));
 
         return c.json({ code: 200, msg: "获取成功", data: list.join('\n') });
       }

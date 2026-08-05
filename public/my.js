@@ -57,7 +57,7 @@ function get_categorys() {
           $_html += '<li class="list-group-item"><a href="#" onclick="read(\'' + item.name + '\')">' + item.name + '</a></li>';
         });
         $('.list-group').html($_html);
-        read(json[0]['name']);
+        read(json['data'][0]['name']);
       } else {
         $('.list-group').html("");
         $("#name").val("新分类");
