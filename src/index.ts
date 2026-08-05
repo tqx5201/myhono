@@ -152,8 +152,10 @@ app.post("/api", async (c) => {
       }
       case "merge_list": {
         const list = [];
-        for await (const entry of kv.list({ prefix }))
+        for await (const entry of kv.list({ prefix })) {
+          list.push(entry.key[1].substr(2) + ",#genre#");
           list.push(mergeLiveSourceList(entry.value));
+        }
 
         await kv.set(["txt", ...prefix], list.join('\n'));
 

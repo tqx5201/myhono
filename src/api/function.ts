@@ -4,6 +4,14 @@
  * @returns 处理后文本
  */
 export function mergeLiveSourceList(txtContent: string): string {
+  // 1. 删除 /* */ 多行块注释
+  // 2. 删除 // 单行注释
+  // 3. 删除 # 开头的整行（含前面空白空格、制表符）
+  txtContent = txtContent
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/.*/g, '')
+    .replace(/^\s*#.*/gm, '');
+
   const lines = txtContent
     .trim()
     .split('\n')
